@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.heavyTask = void 0;
 const axios_1 = __importDefault(require("axios"));
 const heavyTask = async () => {
-    const url = 'https://jsonplaceholder.typicode.com/posts';
+    const url = 'http://my-mock-server:3000/heavy-task';
     const result = await axios_1.default.get(url);
     return result.data;
 };

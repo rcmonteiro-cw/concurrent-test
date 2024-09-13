@@ -13,13 +13,13 @@ const task_1 = require("./task");
 // Create a pool with fixed number of workers
 // It's very heavy to create a new worker for each _request
 const pool = workerpool_1.default.pool(__dirname + '/../dist/worker.js', {
-    maxWorkers: 8, // Based on system's available CPU cores
+    maxWorkers: 2, // Based on system's available CPU cores
     workerType: 'thread',
 });
 // Using child_process
 const heavyTaskWithChildProcess = async () => {
     return new Promise((resolve, reject) => {
-        const child = (0, child_process_1.fork)(path_1.default.join(__dirname, 'worker.ts'));
+        const child = (0, child_process_1.fork)(path_1.default.join(__dirname + '/../dist/worker.js'));
         child.on('message', (message) => {
             resolve(message);
         });

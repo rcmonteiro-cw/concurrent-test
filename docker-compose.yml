@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  my-mock-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+    networks:
+      - my-network
+    ports:
+      - "4000:4000"
+
+  my-node-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - my-network
+    ports:
+      - "3000:3000"
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 512M
+    depends_on:
+      - my-mock-server
+
+networks:
+  my-network:
+    driver: bridge

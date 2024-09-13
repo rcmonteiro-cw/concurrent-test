@@ -4,29 +4,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = __importDefault(require("axios"));
-// Test concurrent requests to a specific endpoint
-async function testConcurrency(endpoint, numRequests) {
-    const promises = [];
-    for (let i = 0; i < numRequests; i++) {
-        promises.push(axios_1.default.get(`http://localhost:3000/${endpoint}`));
+const perf_hooks_1 = require("perf_hooks");
+const endpoints = ['direct', 'child', 'parallel'];
+const concurrentCalls = 10;
+const testConcurrency = async (endpoint, calls) => {
+    const start = perf_hooks_1.performance.now();
+    const initialMemoryUsage = process.memoryUsage().heapUsed;
+    const initialCpuUsage = process.cpuUsage();
+    const requests = Array.from({ length: calls }, () => axios_1.default.get(`http://localhost:3000/${endpoint}`));
+    await Promise.all(requests);
+    const end = perf_hooks_1.performance.now();
+    const finalMemoryUsage = process.memoryUsage().heapUsed;
+    const finalCpuUsage = process.cpuUsage();
+    return {
+        totalTimeElapsed: end - start,
+        totalMemoryUsed: finalMemoryUsage - initialMemoryUsage,
+        cpuUsage: {
+            user: finalCpuUsage.user - initialCpuUsage.user,
+            system: finalCpuUsage.system - initialCpuUsage.system,
+        },
+    };
+};
+const runTests = async () => {
+    const results = {};
+    for (const endpoint of endpoints) {
+        console.log(`Testing ${endpoint} with ${concurrentCalls} concurrent calls...`);
+        results[endpoint] = await testConcurrency(endpoint, concurrentCalls);
     }
-    try {
-        const responses = await Promise.all(promises);
-        responses.forEach((res, index) => {
-            console.log(`Response ${index + 1}: Time: ${res.data.timeElapsed}ms / Memory: ${JSON.stringify(res.data.memoryUsage)}`);
-        });
-    }
-    catch (err) {
-        console.error("Error during test:", err);
-    }
-}
-// Simulate concurrent requests to '/direct' and '/child'
-async function runTests() {
-    console.log("Testing with direct call...");
-    await testConcurrency('direct', 100);
-    //   console.log("Testing with one worker per request child process...");
-    //   await testConcurrency('child', 10);
-    console.log("Testing with fixed workers parallel child process...");
-    await testConcurrency('parallel', 100);
-}
-runTests();
+    console.log('Test Results:');
+    console.table(results);
+};
+runTests().catch(console.error);
