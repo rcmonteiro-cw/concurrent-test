@@ -10,7 +10,7 @@ import { heavyTask } from './task';
 // Create a pool with fixed number of workers
 // It's very heavy to create a new worker for each _request
 const pool = workerpool.pool(__dirname + '/../dist/worker.js', {
-    maxWorkers: 8, // Based on system's available CPU cores
+    maxWorkers: 4, // Based on system's available CPU cores
     workerType: 'thread',
 });
 
